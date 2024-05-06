@@ -70,16 +70,26 @@ public class GameController {
 
     @EventListener
     public void handleDisconnect(SessionDisconnectEvent sessionDisconnectEvent) throws JsonProcessingException {
-        StompHeaderAccessor accessor= (StompHeaderAccessor) SimpMessageHeaderAccessor.getAccessor(sessionDisconnectEvent.getMessage());
+        StompHeaderAccessor accessor = (StompHeaderAccessor) SimpMessageHeaderAccessor.getAccessor(sessionDisconnectEvent.getMessage());
         ObjectMapper objectMapper = new ObjectMapper();
 
-        UUID gameId = (UUID) accessor.getSessionAttributes().get("game ID");
-        String g = redisTemplate.opsForValue().get(gameId.toString());
-        Game game = objectMapper.readValue(g, Game.class);
-        redisTemplate.delete(game.getGameId().toString());
-        accessor.getSessionAttributes().remove("game ID");
-    }
 
+        if (accessor.getSessionAttributes().get("game ID") != null) {
+            UUID gameId = (UUID) accessor.getSessionAttributes().get("game ID");
+            String g = redisTemplate.opsForValue().get(gameId.toString());
+            Game game = objectMapper.readValue(g, Game.class);
+
+            accessor.getSessionAttributes().remove("game ID");
+            redisTemplate.delete(game.getGameId().toString());
+        }
+
+        String playerName = (String) accessor.getSessionAttributes().get("player name");
+        String hashKey = "Available players";
+
+        if (redisTemplate.opsForHash().hasKey(hashKey, playerName)) {
+            redisTemplate.opsForHash().delete(hashKey, playerName);
+        }
+    }
 
 
 

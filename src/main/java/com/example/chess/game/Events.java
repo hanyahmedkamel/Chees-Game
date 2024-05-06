@@ -48,33 +48,31 @@ public class Events {
             connection.multi();
             try {
                 System.out.println(objectMapper.writeValueAsString(player).toString());
-                redisTemplate.opsForList().rightPush("Available players", objectMapper.writeValueAsString(player));
+                redisTemplate.opsForHash().put("Available players", player.getName(), objectMapper.writeValueAsString(player));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
-            Long listSize = redisTemplate.opsForList().size("Available players");
-            System.out.println(listSize);
-            if (listSize != null && listSize > 1) {
-                ObjectMapper objectMapper=new ObjectMapper();
+            Long mapSize = redisTemplate.opsForHash().size("Available players");
+            System.out.println(mapSize);
+            if (mapSize != null && mapSize > 1) {
+                ObjectMapper objectMapper = new ObjectMapper();
                 Player player1;
                 Player player2;
                 try {
-                     player1= objectMapper.readValue(redisTemplate.opsForList().leftPop("Available players"),Player.class);
+                    player1 = objectMapper.readValue((String) redisTemplate.opsForHash().values("Available players").iterator().next(), Player.class);
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
 
                 try {
-                    player2= objectMapper.readValue(redisTemplate.opsForList().leftPop("Available players"),Player.class);
+                    player2 = objectMapper.readValue((String) redisTemplate.opsForHash().values("Available players").iterator().next(), Player.class);
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
 
                 player2.setTeam(false);
-                System.out.println(player1.getName()+"  "+player2.getName());
+                System.out.println(player1.getName() + "  " + player2.getName());
                 applicationEventPublisher.publishEvent(new Game(player1, player2));
-
-
             }
             connection.exec();
             return null; // Return type specified as Object or Void
@@ -82,6 +80,7 @@ public class Events {
 
         redisTemplate.execute(redisCallback);
     }
+
 
 
     @Async
