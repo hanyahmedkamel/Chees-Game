@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spring Boot Tutorial - WebSocket</title>
+    <link href="main.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+<div>
+    <div>
+        <h1>Spring Boot Tutorial.</h1>
+        <h2>Websockets.</h2>
+        <div class="row">
+            <form id="form">
+                <div class="row">
+                    <label for="connect">Start New Game:</label>
+                    <button id="connect" type="submit">Start</button>
+                    <button id="disconnect" type="submit" disabled="disabled">Cancel</button>
+                </div>
+            </form>
+        </div>
+        <div class="row">
+            <form id="sendMessageForm">
+                <div>
+                    <label class="row" for="message">Piece Name:</label>
+                    <input type="text" id="message" placeholder="Piece Name">
+                </div>
+                <!-- New input fields for integers -->
+                <div>
+                    <label class="row" for="int1">X:</label>
+                    <input type="number" id="int1" placeholder="Enter X">
+                </div>
+                <div>
+                    <label class="row" for="int2">Y:</label>
+                    <input type="number" id="int2" placeholder="Enter Y">
+                </div>
+                <!-- End of new input fields -->
+                <button id="send" type="submit">Send</button>
+
+            </form>
+        </div>
+        <div id="conversation" style="display: none;">
+            <table>
+                <thead>
+                <tr>
+
+                </tr>
+                </thead>
+                <tbody id="greetings"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
