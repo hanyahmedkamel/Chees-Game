@@ -5,13 +5,18 @@ public class InternalMessage {
     private String destination;
     private String data;
 
+    private String toUser;
+
     public InternalMessage() {
     }
 
     public InternalMessage(String destination, String data) {
         this.destination = destination;
         this.data = data;
+        toUser="null";
     }
+
+
 
     public String getDestination() {
         return destination;
@@ -27,5 +32,14 @@ public class InternalMessage {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+
+    public String getToUser() {
+        return toUser;
+    }
+
+    public void setToUser(String toUser) {
+        this.toUser = toUser;
     }
 }

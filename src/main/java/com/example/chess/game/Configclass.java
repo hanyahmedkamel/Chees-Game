@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Configclass {
 
     @Bean
-    public ConcurrentHashMap<Player, SimpMessageHeaderAccessor> getMap() {
+    public ConcurrentHashMap<String, SimpMessageHeaderAccessor> getMap() {
         return new ConcurrentHashMap<>();
     }
     @Bean

@@ -27,12 +27,12 @@ public class GameController {
     private final RedisMessagePublisher redisMessagePublisher;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final SessionRepository sessionRepository;
-    private final ConcurrentHashMap<Player, SimpMessageHeaderAccessor> concurrentHashMap;
+    private final ConcurrentHashMap<String, SimpMessageHeaderAccessor> concurrentHashMap;
     private final RedisTemplate<String, String> redisTemplate;
     @Autowired
     private ConcurrentHashMap<String, WebSocketSession>map;
     @Autowired
-    public GameController(RedisMessagePublisher redisMessagePublisher, ApplicationEventPublisher applicationEventPublisher, SessionRepository sessionRepository, ConcurrentHashMap<Player, SimpMessageHeaderAccessor> concurrentHashMap, RedisTemplate<String, String> redisTemplate) {
+    public GameController(RedisMessagePublisher redisMessagePublisher, ApplicationEventPublisher applicationEventPublisher, SessionRepository sessionRepository, ConcurrentHashMap<String, SimpMessageHeaderAccessor> concurrentHashMap, RedisTemplate<String, String> redisTemplate) {
         this.redisMessagePublisher = redisMessagePublisher;
         this.applicationEventPublisher = applicationEventPublisher;
         this.sessionRepository = sessionRepository;
@@ -42,11 +42,9 @@ public class GameController {
     @MessageMapping("/start")
     public void start(@Payload String message, SimpMessageHeaderAccessor accessor) throws JsonProcessingException {
         redisMessagePublisher.convertAndSend("/topic/user/" + message, "hello");
-        System.out.println(accessor.getSessionAttributes());
         Player player = new Player(message, true);
         accessor.getSessionAttributes().put("player name",message);
-        concurrentHashMap.put(player, accessor);
-        System.out.println(player.getName());
+        concurrentHashMap.put(player.getName(), accessor);
         applicationEventPublisher.publishEvent(player);
     }
 

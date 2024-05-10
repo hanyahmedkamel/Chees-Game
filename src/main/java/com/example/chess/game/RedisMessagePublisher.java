@@ -1,5 +1,7 @@
 package com.example.chess.game;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -18,17 +20,28 @@ public class RedisMessagePublisher  {
         this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
-    public void publish(InternalMessage message) {
+    public void publish(InternalMessage message) throws JsonProcessingException {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        // Serialize to JSON
+        String json = mapper.writeValueAsString(message);
 
 
 
-        redisTemplate.convertAndSend(message.getDestination(), message.getData());
+        redisTemplate.convertAndSend("stackfortech", json);
 
         simpMessagingTemplate.convertAndSend(message.getDestination(), message.getData());
 
     }
-    public void convertAndSend(String channel,String data){
+    public void convertAndSend(String channel,String data) throws JsonProcessingException {
         InternalMessage internalMessage=new InternalMessage(channel,data);
+        publish(internalMessage);
+    }
+
+    public void convertAndSend(String touser,String channel,String data) throws JsonProcessingException {
+        InternalMessage internalMessage=new InternalMessage(channel,data);
+        internalMessage.setToUser(touser);
         publish(internalMessage);
     }
 }

@@ -26,10 +26,6 @@ public class Events {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    private ConcurrentHashMap<Player, SimpMessageHeaderAccessor> concurrentHashMap;
-
-
-    @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
@@ -47,31 +43,46 @@ public class Events {
         RedisCallback<Object> redisCallback = connection -> {
             connection.multi();
             try {
-                System.out.println(objectMapper.writeValueAsString(player).toString());
                 redisTemplate.opsForHash().put("Available players", player.getName(), objectMapper.writeValueAsString(player));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
             Long mapSize = redisTemplate.opsForHash().size("Available players");
-            System.out.println(mapSize);
             if (mapSize != null && mapSize > 1) {
                 ObjectMapper objectMapper = new ObjectMapper();
-                Player player1;
-                Player player2;
+                Player player1=null;
+                Player player2 = null;
                 try {
-                    player1 = objectMapper.readValue((String) redisTemplate.opsForHash().values("Available players").iterator().next(), Player.class);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                    // Retrieve player from Redis
+                    String playerData = (String) redisTemplate.opsForHash().values("Available players").iterator().next();
+                     player1 = objectMapper.readValue(playerData, Player.class);
+
+                    // Delete player from Redis
+                    redisTemplate.opsForHash().delete("Available players", player1.getName());
+
+                    // Proceed with other logic using player1 if needed
+
+                } catch (Exception e) {
+                    // Handle exceptions appropriately
+                    e.printStackTrace();
+                }
+                try {
+                    // Retrieve player from Redis
+                    String playerData = (String) redisTemplate.opsForHash().values("Available players").iterator().next();
+                     player2 = objectMapper.readValue(playerData, Player.class);
+
+                    // Delete player from Redis
+                    redisTemplate.opsForHash().delete("Available players", player2.getName());
+
+                    // Proceed with other logic using player1 if needed
+
+                } catch (Exception e) {
+                    // Handle exceptions appropriately
+                    e.printStackTrace();
                 }
 
-                try {
-                    player2 = objectMapper.readValue((String) redisTemplate.opsForHash().values("Available players").iterator().next(), Player.class);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
 
                 player2.setTeam(false);
-                System.out.println(player1.getName() + "  " + player2.getName());
                 applicationEventPublisher.publishEvent(new Game(player1, player2));
             }
             connection.exec();
@@ -86,14 +97,13 @@ public class Events {
     @Async
     @EventListener
     public void startGame(Game game) throws InterruptedException, JsonProcessingException {
-        System.out.println(game.getGameId());
-        concurrentHashMap.get(game.getPlayer1()).getSessionAttributes().put("game ID", game.getGameId());
-        concurrentHashMap.get(game.getPlayer2()).getSessionAttributes().put("game ID", game.getGameId());
 
-        redisMessagePublisher.convertAndSend("/topic/user/" + game.getPlayer1().getName(), "listen on /topic/game/" + game.getGameId());
-        redisMessagePublisher.convertAndSend("/topic/user/" + game.getPlayer2().getName(), "listen on /topic/game/" + game.getGameId());
+
+        redisMessagePublisher.convertAndSend(game.getPlayer1().getName(),"/topic/user/" + game.getPlayer1().getName(), "listen on /topic/game/" + game.getGameId());
+        redisMessagePublisher.convertAndSend(game.getPlayer2().getName(),"/topic/user/" + game.getPlayer2().getName(), "listen on /topic/game/" + game.getGameId());
         Thread.sleep(100);
-        redisMessagePublisher.convertAndSend("/topic/game/" + game.getGameId(), game.display());
         redisTemplate.opsForValue().set(game.getGameId().toString(), objectMapper.writeValueAsString(game));
+        redisMessagePublisher.convertAndSend(game.getPlayer1().getName(),"/topic/game/" + game.getGameId(), game.display());
+        redisMessagePublisher.convertAndSend(game.getPlayer2().getName(),"/topic/game/" + game.getGameId(), game.display());
     }
 }
