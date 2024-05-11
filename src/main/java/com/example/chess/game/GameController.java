@@ -12,7 +12,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.session.SessionRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -26,18 +25,16 @@ public class GameController {
 
     private final RedisMessagePublisher redisMessagePublisher;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final SessionRepository sessionRepository;
     private final ConcurrentHashMap<String, SimpMessageHeaderAccessor> concurrentHashMap;
     private final RedisTemplate<String, String> redisTemplate;
+    private final ConcurrentHashMap<String, WebSocketSession>map;
     @Autowired
-    private ConcurrentHashMap<String, WebSocketSession>map;
-    @Autowired
-    public GameController(RedisMessagePublisher redisMessagePublisher, ApplicationEventPublisher applicationEventPublisher, SessionRepository sessionRepository, ConcurrentHashMap<String, SimpMessageHeaderAccessor> concurrentHashMap, RedisTemplate<String, String> redisTemplate) {
+    public GameController(RedisMessagePublisher redisMessagePublisher, ApplicationEventPublisher applicationEventPublisher, ConcurrentHashMap<String, SimpMessageHeaderAccessor> concurrentHashMap, RedisTemplate<String, String> redisTemplate, ConcurrentHashMap<String, WebSocketSession> map) {
         this.redisMessagePublisher = redisMessagePublisher;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.sessionRepository = sessionRepository;
         this.concurrentHashMap = concurrentHashMap;
         this.redisTemplate = redisTemplate;
+        this.map = map;
     }
     @MessageMapping("/start")
     public void start(@Payload String message, SimpMessageHeaderAccessor accessor) throws JsonProcessingException {

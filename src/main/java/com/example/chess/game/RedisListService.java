@@ -21,12 +21,12 @@ public class RedisListService {
             System.out.println(listSize);
             if (listSize != null && listSize > 1) {
                 System.out.println("List size is greater than 1. Executing additional operations...");
-                // Example operation: Remove the first element from the list
 
-                // Add more operations as needed
+
+
             }
             connection.exec();
-            return null; // Return type specified as Object or Void
+            return null;
         };
 
         redisTemplate.execute(redisCallback);
